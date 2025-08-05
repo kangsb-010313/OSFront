@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<mapper namespace="board">
+
+	<!-- 전체리스트 -->
+	<select id="selectList" resultType="com.javaex.vo.BoardVO">
+		<![CDATA[
+			select 	b.no,
+					b.title,
+			        b.content,
+			        b.hit,
+			        date_format(b.reg_date, "%Y-%m-%d") regDate,
+			        u.no userNo,
+			        u.name userName
+			from users u, board b
+			where u.no = b.user_no
+			order by b.no desc
+		]]>
+	</select>
+	
+	<!-- 리스트(페이징) -->
+	<select id="selectList2" parameterType="map" resultType="com.javaex.vo.BoardVO">
+		<![CDATA[
+			select 	b.no,
+					b.title,
+					b.content,
+					b.hit,
+					date_format(b.reg_date, "%Y-%m-%d") regDate,
+					u.no userNo,
+					u.name userName
+			from users u, board b
+			where u.no = b.user_no
+			order by b.no desc
+			limit #{startRowNo}, #{listCnt}
+		]]>
+	</select>
+	
+	
+	<!-- 리스트(페이징+검색) -->
+	<select id="selectList3" parameterType="map" resultType="com.javaex.vo.BoardVO">
+		<![CDATA[   
+			select 	b.no,
+					b.title,
+					b.content,
+					b.hit,
+					date_format(b.reg_date, "%Y-%m-%d") regDate,
+					u.no userNo,
+					u.name userName
+			from users u, board b
+			where u.no = b.user_no
+			
+		]]>	
+		<if test="kwd != null">
+			and title like concat('%', #{kwd}, '%')
+		</if>
+		<![CDATA[   
+			order by b.no desc
+			limit #{startRowNo}, #{listCnt}
+		]]>
+	</select>
+	
+	<!-- 게시글 작성 -->
+	<insert id="insertBoard">
+		<![CDATA[
+			insert into board
+        	values(null, #{userNo}, #{title}, #{content}, 0, now())
+		]]>
+	</insert>
+	
+	<!-- 전체글갯수 구하기 (페이징)-->
+	<select id="selectTotalCount" resultType="int">
+		<![CDATA[
+			select count(*) count
+			from board
+		]]>
+	</select>
+	
+	<!-- 전체글갯수 구하기 (페이징+검색)-->
+	<select id="selectTotalCountByKwd" resultType="int">
+		<![CDATA[
+			select count(*) count
+			from board
+			where title like concat('%', #{kwd}, '%')
+		]]>
+	</select>
+	
+	<!-- 선택한 글 내용 가져오기 -->
+	<select id="selectListOne" parameterType="int" resultType="com.javaex.vo.BoardVO">
+			<![CDATA[
+				select b.no
+				    , b.title
+					, b.content
+					, b.hit
+					, b.reg_date regDate
+					, u.no userNo
+					, u.name userName
+				from board b
+					, users u
+				where b.user_no = u.no
+				and b.no = #{no}
+			]]>
+	</select>
+	
+	<!-- 글삭제 -->
+	<delete id="delete" parameterType="com.javaex.vo.BoardVO">
+			<![CDATA[
+				delete from  board
+				where user_no = #{userNo}
+				and no = #{no}
+			]]>
+	</delete>
+	
+	
+</mapper>
